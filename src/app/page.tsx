@@ -79,7 +79,7 @@ export default function Home() {
                 <button
                   key={status}
                   onClick={() => toggleStatusFilter(status)}
-                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 && "text-slate-100/25"} p-2 rounded-lg mr-2`}>
+                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 && "opacity-25"} p-2 rounded-lg mr-2`}>
                   {toEmoji(status)}
                 </button>
               )
@@ -148,7 +148,7 @@ export default function Home() {
                                 key={status}
                                 disabled={status.valueOf() === entry.status}
                                 onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
-                                className={`bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "text-slate-100/25" : ""} mr-2`}>
+                                className={`bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
                                 {toEmoji(status)}
                               </button>
                             )
