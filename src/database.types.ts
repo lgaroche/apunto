@@ -12,42 +12,27 @@ export type Database = {
       entries: {
         Row: {
           created_at: string
-          id: number
-          label: string | null
+          id: string
+          label: string
           modified_at: string
-          path: string | null
           status: number
+          text: string | null
         }
         Insert: {
           created_at?: string
-          id?: number
-          label?: string | null
+          id?: string
+          label?: string
           modified_at?: string
-          path?: string | null
           status?: number
+          text?: string | null
         }
         Update: {
           created_at?: string
-          id?: number
-          label?: string | null
+          id?: string
+          label?: string
           modified_at?: string
-          path?: string | null
           status?: number
-        }
-        Relationships: []
-      }
-      status: {
-        Row: {
-          id: number
-          label: string | null
-        }
-        Insert: {
-          id?: number
-          label?: string | null
-        }
-        Update: {
-          id?: number
-          label?: string | null
+          text?: string | null
         }
         Relationships: []
       }

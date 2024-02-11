@@ -1,7 +1,9 @@
 "use client";
 import { useApuntoContext } from "@/providers/ApuntoProvider";
-import { useSupabaseContext } from "@/providers/SupabaseProvider";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DateTime } from "luxon";
+import { FaPlus } from "react-icons/fa";
 
 enum Status {
   New = 1,
@@ -11,11 +13,11 @@ enum Status {
 }
 
 export default function Home() {
-  const { entries, addEntry, setStatus, deleteEntry } = useApuntoContext()
+  const { entries, addEntry, updateEntry, deleteEntry } = useApuntoContext()
   const [statusFilter, setStatusFilter] = useState<number>(0)
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
-  const [deletePending, setDeletePending] = useState<number | undefined>()
+  const [deletePending, setDeletePending] = useState<string | undefined>()
   const ref = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -61,34 +63,36 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-row justify-center">
+    <div className="m-auto max-w-xl">
 
-      <div className="p-5">
-        <div className="flex mb-5">
-          <button
-            onClick={() => setNewEntry("")}
-            className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2">
-            +
-          </button>
+      <div className="p-5 max-w-full">
+        <div className="flex mb-5 flex-col sm:flex-row">
+          <div className="flex mb-2">
+            <button
+              onClick={() => setNewEntry("")}
+              className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2">
+              <FaPlus />
+            </button>
 
-          {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
-            return (
-              <button
-                key={status}
-                onClick={() => toggleStatusFilter(status)}
-                className={`bg-slate-50 dark:bg-slate-800 text-slate-100${(statusFilter & status) > 0 && "/25"} p-2 rounded-lg mr-2`}>
-                {toEmoji(status)}
-              </button>
-            )
-          })}
+            {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
+              return (
+                <button
+                  key={status}
+                  onClick={() => toggleStatusFilter(status)}
+                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 && "text-slate-100/25"} p-2 rounded-lg mr-2`}>
+                  {toEmoji(status)}
+                </button>
+              )
+            })}
+          </div>
           <input
             value={textFilter}
             onChange={e => setTextFilter(e.target.value)}
             type="text"
             placeholder="Filter"
-            className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800" />
+            className="w-full mb-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800" />
         </div>
-        <div>
+        <div className="flex flex-col">
           {newEntry !== undefined && (
             <div className="mb-5">
               <form onSubmit={submitNewEntry} className="flex">
@@ -100,7 +104,9 @@ export default function Home() {
                   onSubmit={() => console.log("submit")}
                   onKeyUp={e => e.key === "Escape" && setNewEntry(undefined)}
                   className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800" />
-                <button className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg ml-2">+</button>
+                <button className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg ml-2">
+                  <FaPlus />
+                </button>
                 <button
                   onClick={() => setNewEntry(undefined)}
                   className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg ml-2">
@@ -109,45 +115,64 @@ export default function Home() {
               </form>
             </div>
           )}
-          {entries
-            .filter(e => (e.status & statusFilter) === 0)
-            .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
-            .map((entry, index) => {
-              const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-200 dark:text-slate-300" : "text-green-600"
+          <div>
+            {entries
+              .filter(e => (e.status & statusFilter) === 0)
+              .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
+              .map((entry) => {
+                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-200 dark:text-slate-300" : "text-green-600"
 
-              return (
-                <div key={index} className={`group flex rounded-lg cursor-default pl-2 ${deletePending === entry.id ? "bg-red-600" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
-                  {deletePending === entry.id ?
-                    <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
-                      <button className="grow">Delete?</button>
-                    </div>
-                    :
-                    <>
-                      <div className={`grow font-semibold ${color}`}>
-                        <span className="mr-2">
-                          {toEmoji(entry.status)}
+                return (
+                  <div
+                    key={entry.id}
+                    className={`group flex justify-between rounded-lg cursor-default ${deletePending === entry.id ? "bg-red-600" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                    {deletePending === entry.id ?
+                      <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
+                        <button className="grow">Delete?</button>
+                      </div>
+                      :
+                      <>
+                        <div className={`flex grow font-semibold overflow-hidden ${color}`}>
+                          <div className="mr-2">{toEmoji(entry.status)}</div>
+                          <div className="w-auto text-nowrap text-ellipsis overflow-hidden">{entry.label}</div>
+                        </div>
+                        <div className="hidden group-hover:inline text-nowrap">
+                          <Link
+                            href={`/entry/${entry.id}`}
+                            className="mr-4">
+                            💬
+                          </Link>
+                          {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
+                            return (
+                              <button
+                                key={status}
+                                disabled={status.valueOf() === entry.status}
+                                onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
+                                className={`bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "text-slate-100/25" : ""} mr-2`}>
+                                {toEmoji(status)}
+                              </button>
+                            )
+                          })
+                          }
+                          <button
+                            className="mr-2"
+                            onClick={() => setDeletePending(entry.id)}>
+                            ❌
+                          </button>
+                        </div>
+                        <span
+                          className="text-slate-50/50 text-nowrap ml-5">
+                          {DateTime
+                            .fromISO(entry.modified_at)
+                            .toRelative()
+                            ?.split(" ")
+                            .map((word, i) => i === 0 ? word : i === 1 && word[0])}
                         </span>
-                        <span>{entry.label}</span>
-                      </div>
-                      <div className="invisible group-hover:visible">
-                        {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
-                          return (
-                            <button
-                              key={status}
-                              onClick={() => setStatus(entry.id, status)}
-                              className={`bg-slate-50 dark:bg-slate-800 text-slate-100${status === entry.status ? "/25" : ""} mr-2`}>
-                              {toEmoji(status)}
-                            </button>
-                          )
-                        })
-                        }
-                        <button onClick={() => setDeletePending(entry.id)}>❌</button>
-                      </div>
-                      <span className="text-slate-50/50">1m</span>
-                    </>}
-                </div>
-              )
-            })}
+                      </>}
+                  </div>
+                )
+              })}
+          </div>
         </div>
       </div>
     </div>
