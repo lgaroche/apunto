@@ -120,7 +120,7 @@ export default function Home() {
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .map((entry) => {
-                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-200 dark:text-slate-300" : "text-green-600"
+                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-300" : "text-green-600"
 
                 return (
                   <div
@@ -161,7 +161,7 @@ export default function Home() {
                           </button>
                         </div>
                         <span
-                          className="text-slate-50/50 text-nowrap ml-5">
+                          className="text-slate-500 dark:text-slate-50 opacity-50 text-nowrap ml-5">
                           {DateTime
                             .fromISO(entry.modified_at)
                             .toRelative()
