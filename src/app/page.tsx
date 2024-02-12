@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { FaPlus } from "react-icons/fa";
+import { FaDeleteLeft } from "react-icons/fa6";
 
 enum Status {
   New = 1,
@@ -110,7 +111,7 @@ export default function Home() {
                 <button
                   onClick={() => setNewEntry(undefined)}
                   className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg ml-2">
-                  x
+                  <FaDeleteLeft />
                 </button>
               </form>
             </div>
