@@ -126,7 +126,7 @@ export default function Home() {
                 return (
                   <div
                     key={entry.id}
-                    className={`group flex justify-between rounded-lg cursor-default ${deletePending === entry.id ? "bg-red-600" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                    className={`group flex justify-between rounded-lg cursor-default ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
                         <button className="grow">Delete?</button>
