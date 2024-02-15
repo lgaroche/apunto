@@ -9,8 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categories: {
+        Row: {
+          id: string
+          label: string | null
+          parent: string | null
+        }
+        Insert: {
+          id?: string
+          label?: string | null
+          parent?: string | null
+        }
+        Update: {
+          id?: string
+          label?: string | null
+          parent?: string | null
+        }
+        Relationships: []
+      }
       entries: {
         Row: {
+          category: string | null
           created_at: string
           id: string
           label: string
@@ -19,6 +38,7 @@ export type Database = {
           text: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           id?: string
           label?: string
@@ -27,6 +47,7 @@ export type Database = {
           text?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           id?: string
           label?: string
@@ -34,7 +55,15 @@ export type Database = {
           status?: number
           text?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_entries_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

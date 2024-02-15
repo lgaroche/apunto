@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { FaPlus } from "react-icons/fa";
 import { FaDeleteLeft } from "react-icons/fa6";
+import Categories from "./categories";
+import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 
 enum Status {
   New = 1,
@@ -19,6 +21,7 @@ export default function Home() {
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
   const [deletePending, setDeletePending] = useState<string | undefined>()
+  const { selected } = useCategoryFilterContext()
   const ref = useRef<HTMLDivElement>(null);
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
@@ -64,9 +67,11 @@ export default function Home() {
   }
 
   return (
-    <div className="m-auto max-w-xl">
-
-      <div className="p-5 max-w-full">
+    <div className="m-auto flex max-w-screen-xl">
+      <div className="p-5 basis-1/3 max-w-96 hidden sm:block">
+        <Categories />
+      </div>
+      <div className="p-5 basis-2/3">
         <div className="flex mb-5 flex-col sm:flex-row">
           <div className="flex mb-2">
             <button
@@ -80,7 +85,7 @@ export default function Home() {
                 <button
                   key={status}
                   onClick={() => toggleStatusFilter(status)}
-                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 && "opacity-25"} p-2 rounded-lg mr-2`}>
+                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 ? "opacity-25" : ""} p-2 rounded-lg mr-2`}>
                   {toEmoji(status)}
                 </button>
               )
@@ -118,6 +123,7 @@ export default function Home() {
           )}
           <div>
             {entries
+              .filter(e => selected.indexOf(e.category || "root") > -1)
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .map((entry) => {
