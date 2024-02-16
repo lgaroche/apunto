@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useEffect } from "react";
 import { Category, useApuntoContext } from "./ApuntoProvider";
 
 interface CategoryNode {
@@ -73,6 +73,10 @@ const CategoryFilterProvider = ({ children }: { children: React.ReactNode }) => 
         console.log("root", root)
         setCategoryNodes([root])
     }, [categories])
+
+    useEffect(() => {
+        select("root")
+    }, [select])
 
     const value = React.useMemo(() => ({ selected, select, categories: categoryNodes }), [selected, select, categoryNodes])
 

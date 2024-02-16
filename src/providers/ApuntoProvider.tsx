@@ -12,6 +12,8 @@ interface ApuntoContextProps {
     addEntry: (entry: Partial<Entry>) => Promise<void>;
     deleteEntry: (id: string) => Promise<void>;
     updateEntry: (entry: Partial<Entry>) => Promise<void>;
+    addCategory: (category: Partial<Category>) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
 }
 
 const ApuntoContext = React.createContext<ApuntoContextProps>({
@@ -19,7 +21,9 @@ const ApuntoContext = React.createContext<ApuntoContextProps>({
     categories: [],
     addEntry: async () => { },
     deleteEntry: async () => { },
-    updateEntry: async () => { }
+    updateEntry: async () => { },
+    addCategory: async () => { },
+    deleteCategory: async () => { },
 })
 
 const useApuntoContext = () => React.useContext(ApuntoContext);
@@ -59,7 +63,7 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
             console.error("error", error)
             return
         }
-        setEntries(entries => [...entries, ...data])
+        setEntries(entries => [...data, ...entries])
 
     }, [supabase])
 
@@ -89,6 +93,53 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
         setEntries(entries => entries.map(e => e.id === entry.id ? data[0] : e))
     }, [supabase])
 
+    const addCategory = useCallback(async (category: Partial<Category>) => {
+        if (!supabase) return
+        const { data, error } = await supabase.from("categories").insert(category).select()
+        if (error) {
+            console.error("error", error)
+            return
+        }
+        setCategories(categories => [...categories, ...data])
+    }, [supabase])
+
+    const deleteCategory = useCallback(async (id: string) => {
+        if (!supabase) return
+        const category = categories.find(c => c.id === id)
+        if (!category) return
+        {
+            // update all child categories to parent
+            const { data, error } = await supabase
+                .from("categories")
+                .update({ parent: category.parent })
+                .eq("parent", id)
+                .select()
+            if (error) {
+                console.error("error", error)
+                return
+            }
+        }
+        {
+            // update all entries to parent
+            const { data, error } = await supabase
+                .from("entries")
+                .update({ category: category.parent })
+                .eq("category", id)
+                .select()
+            if (error) {
+                console.error("error", error)
+                return
+            }
+        }
+        const { data, error } = await supabase.from("categories").delete().eq("id", id).select()
+        if (error) {
+            console.error("error", error)
+            return
+        }
+        getCategories()
+        getEntries()
+    }, [categories, getCategories, getEntries, supabase])
+
     React.useEffect(() => {
         getCategories()
         getEntries()
@@ -99,8 +150,10 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
         categories,
         addEntry,
         deleteEntry,
-        updateEntry
-    }), [entries, categories, addEntry, deleteEntry, updateEntry])
+        updateEntry,
+        addCategory,
+        deleteCategory
+    }), [entries, categories, addEntry, deleteEntry, updateEntry, addCategory, deleteCategory])
 
     return <ApuntoContext.Provider value={value}>
         {children}

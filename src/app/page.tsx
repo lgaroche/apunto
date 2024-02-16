@@ -5,8 +5,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { FaPlus } from "react-icons/fa";
 import { FaDeleteLeft } from "react-icons/fa6";
-import Categories from "./categories";
+import { Categories } from "./categories";
 import { useCategoryFilterContext } from "@/providers/CategoryFilter";
+import { useRouter } from "next/navigation";
 
 enum Status {
   New = 1,
@@ -16,13 +17,16 @@ enum Status {
 }
 
 export default function Home() {
-  const { entries, addEntry, updateEntry, deleteEntry } = useApuntoContext()
+  const { entries, categories, addEntry, updateEntry, deleteEntry } = useApuntoContext()
+  const { selected } = useCategoryFilterContext()
+
   const [statusFilter, setStatusFilter] = useState<number>(0)
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
   const [deletePending, setDeletePending] = useState<string | undefined>()
-  const { selected } = useCategoryFilterContext()
+
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter()
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
     if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -38,11 +42,12 @@ export default function Home() {
     e.preventDefault()
     if (!newEntry) return
     addEntry({
+      category: selected[0] === "root" ? null : selected[0],
       status: Status.New,
       label: newEntry
     })
     setNewEntry("")
-  }, [addEntry, newEntry])
+  }, [addEntry, newEntry, selected])
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside)
@@ -123,7 +128,7 @@ export default function Home() {
           )}
           <div>
             {entries
-              .filter(e => selected.indexOf(e.category || "root") > -1)
+              .filter(e => selected.indexOf(e.category ?? "root") > -1)
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .map((entry) => {
@@ -132,16 +137,23 @@ export default function Home() {
                 return (
                   <div
                     key={entry.id}
-                    className={`group flex justify-between rounded-lg cursor-default ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                    className={`
+                      group flex justify-between rounded-lg cursor-pointer
+                      ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
                         <button className="grow">Delete?</button>
                       </div>
                       :
                       <>
-                        <div className={`flex grow font-semibold overflow-hidden ${color}`}>
+                        <div
+                          onDoubleClick={() => router.push(`/entry/${entry.id}`)}
+                          className={`flex grow font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                           <div className="mr-2">{toEmoji(entry.status)}</div>
                           <div className="w-auto text-nowrap text-ellipsis overflow-hidden">{entry.label}</div>
+                          <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap">
+                            {categories.find(c => c.id === entry.category)?.label}
+                          </div>
                         </div>
                         <div className="hidden group-hover:inline text-nowrap">
                           <Link
