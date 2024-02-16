@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { FaPlus } from "react-icons/fa";
-import { FaDeleteLeft } from "react-icons/fa6";
+import { FaDeleteLeft, FaFolderTree } from "react-icons/fa6";
 import { Categories } from "./categories";
 import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,7 @@ export default function Home() {
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
   const [deletePending, setDeletePending] = useState<string | undefined>()
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
 
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter()
@@ -56,6 +57,10 @@ export default function Home() {
     }
   }, [handleClickOutside])
 
+  const toggleDrawer = useCallback(() => {
+    setDrawerOpen(o => !o)
+  }, [])
+
   const toEmoji = (status: Status) => {
     switch (status) {
       case Status.New:
@@ -73,12 +78,19 @@ export default function Home() {
 
   return (
     <div className="m-auto flex max-w-screen-xl">
-      <div className="p-5 basis-1/3 max-w-96 hidden sm:block">
+      <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
         <Categories />
       </div>
-      <div className="p-5 overflow-hidden w-full sm:basis-2/3">
+      <div className={`p-5 overflow-hidden w-full ${drawerOpen ? "" : ""}`}>
         <div className="flex mb-5 flex-col sm:flex-row">
           <div className="flex mb-2">
+
+            <button
+              className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 sm:hidden"
+              onClick={toggleDrawer} >
+              <FaFolderTree />
+            </button>
+
             <button
               onClick={() => setNewEntry("")}
               className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2">
