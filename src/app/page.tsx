@@ -3,11 +3,12 @@ import { useApuntoContext } from "@/providers/ApuntoProvider";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
-import { FaPlus } from "react-icons/fa";
+import { FaCheck, FaEdit, FaPlus, FaRegCalendar, FaTrash } from "react-icons/fa";
 import { FaDeleteLeft, FaFolderTree } from "react-icons/fa6";
 import { Categories } from "./categories";
 import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 import { useRouter } from "next/navigation";
+import { MdAccessAlarm } from "react-icons/md";
 
 enum Status {
   New = 1,
@@ -64,13 +65,13 @@ export default function Home() {
   const toEmoji = (status: Status) => {
     switch (status) {
       case Status.New:
-        return "✏️"
+        return <FaPlus />
       case Status.Waiting:
-        return "📋"
+        return <FaRegCalendar />
       case Status.Urgent:
-        return "⏰"
+        return <MdAccessAlarm />
       case Status.Done:
-        return "✅"
+        return <FaCheck />
       default:
         return ""
     }
@@ -144,13 +145,13 @@ export default function Home() {
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .map((entry) => {
-                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-300" : "text-green-600"
+                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-400" : "text-green-600"
 
                 return (
                   <div
                     key={entry.id}
                     className={`
-                      group flex justify-between rounded-lg cursor-pointer text-lg
+                      group flex justify-between rounded-lg cursor-pointer text-xl
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
@@ -160,18 +161,18 @@ export default function Home() {
                       <>
                         <div
                           onDoubleClick={() => router.push(`/entry/${entry.id}`)}
-                          className={`flex grow font-semibold overflow-hidden ${color} selection:bg-inherit`}>
+                          className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                           <div className="mr-2">{toEmoji(entry.status)}</div>
                           <div className="w-auto text-nowrap whitespace-nowrap text-ellipsis ">{entry.label}</div>
                           <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap whitespace-nowrap text-ellipsis">
                             {categories.find(c => c.id === entry.category)?.label}
                           </div>
                         </div>
-                        <div className="hidden group-hover:inline text-nowrap whitespace-nowrap">
+                        <div className="hidden group-hover:flex text-nowrap whitespace-nowrap items-center">
                           <Link
                             href={`/entry/${entry.id}`}
-                            className="mr-4">
-                            💬
+                            className="mr-4 text-3xl">
+                            <FaEdit />
                           </Link>
                           {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
                             return (
@@ -179,16 +180,16 @@ export default function Home() {
                                 key={status}
                                 disabled={status.valueOf() === entry.status}
                                 onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
-                                className={`bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
+                                className={`text-3xl hover:text-blue-700 bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
                                 {toEmoji(status)}
                               </button>
                             )
                           })
                           }
                           <button
-                            className="mr-2"
+                            className="mr-2 hover:text-red-600 text-3xl"
                             onClick={() => setDeletePending(entry.id)}>
-                            ❌
+                            <FaTrash />
                           </button>
                         </div>
                         <span
