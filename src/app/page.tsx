@@ -76,7 +76,7 @@ export default function Home() {
       <div className="p-5 basis-1/3 max-w-96 hidden sm:block">
         <Categories />
       </div>
-      <div className="p-5 basis-2/3">
+      <div className="p-5 overflow-hidden w-full sm:basis-2/3">
         <div className="flex mb-5 flex-col sm:flex-row">
           <div className="flex mb-2">
             <button
@@ -138,7 +138,7 @@ export default function Home() {
                   <div
                     key={entry.id}
                     className={`
-                      group flex justify-between rounded-lg cursor-pointer
+                      group flex justify-between rounded-lg cursor-pointer text-lg
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
@@ -150,12 +150,12 @@ export default function Home() {
                           onDoubleClick={() => router.push(`/entry/${entry.id}`)}
                           className={`flex grow font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                           <div className="mr-2">{toEmoji(entry.status)}</div>
-                          <div className="w-auto text-nowrap text-ellipsis overflow-hidden">{entry.label}</div>
-                          <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap">
+                          <div className="w-auto text-nowrap whitespace-nowrap text-ellipsis ">{entry.label}</div>
+                          <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap whitespace-nowrap text-ellipsis">
                             {categories.find(c => c.id === entry.category)?.label}
                           </div>
                         </div>
-                        <div className="hidden group-hover:inline text-nowrap">
+                        <div className="hidden group-hover:inline text-nowrap whitespace-nowrap">
                           <Link
                             href={`/entry/${entry.id}`}
                             className="mr-4">
