@@ -1,5 +1,5 @@
 "use client";
-import { useApuntoContext } from "@/providers/ApuntoProvider";
+import { Entry, useApuntoContext } from "@/providers/ApuntoProvider";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
@@ -17,6 +17,53 @@ enum Status {
   Done = 8
 }
 
+const StatusIcon = ({ status, className }: { status: Status, className?: string }) => {
+  switch (status) {
+    case Status.New:
+      return <FaPlus className={`text-blue-600 ${className ?? ""}`} />
+    case Status.Waiting:
+      return <FaRegCalendar className={`text-slate-800 ${className ?? ""}`} />
+    case Status.Urgent:
+      return <MdAccessAlarm className={`text-red-600 ${className ?? ""}`} />
+    case Status.Done:
+      return <FaCheck className={`text-green-600 ${className ?? ""}`} />
+    default:
+      return ""
+  }
+}
+
+interface ActionsProps {
+  entry: Entry
+  updateEntry: (entry: Partial<Entry>) => Promise<void>
+  setDeletePending: (id: string) => void
+}
+
+const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
+  <>
+    {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
+      return (
+        <button
+          key={status}
+          disabled={status.valueOf() === entry.status}
+          onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
+          className={`text-3xl ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-3`}>
+          <StatusIcon status={status} className={"hover:text-blue-400"} />
+        </button>
+      )
+    })
+    }
+    <Link
+      href={`/entry/${entry.id}`}
+      className="ml-4 text-3xl text-slate-700 hover:text-blue-400">
+      <FaEdit />
+    </Link>
+    <button
+      className="mr-2 text-slate-700 hover:text-red-600 text-2xl"
+      onClick={() => setDeletePending(entry.id)}>
+      <FaTrash />
+    </button></>
+)
+
 export default function Home() {
   const { entries, categories, addEntry, updateEntry, deleteEntry } = useApuntoContext()
   const { selected } = useCategoryFilterContext()
@@ -26,6 +73,7 @@ export default function Home() {
   const [newEntry, setNewEntry] = useState<string | undefined>()
   const [deletePending, setDeletePending] = useState<string | undefined>()
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
+  const [entrySelected, setEntrySelected] = useState<string | undefined>()
 
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter()
@@ -62,28 +110,13 @@ export default function Home() {
     setDrawerOpen(o => !o)
   }, [])
 
-  const toEmoji = (status: Status) => {
-    switch (status) {
-      case Status.New:
-        return <FaPlus />
-      case Status.Waiting:
-        return <FaRegCalendar />
-      case Status.Urgent:
-        return <MdAccessAlarm />
-      case Status.Done:
-        return <FaCheck />
-      default:
-        return ""
-    }
-  }
-
   return (
     <div className="m-auto flex max-w-screen-xl">
       <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
-        <Categories />
+        <Categories close={() => setDrawerOpen(false)} />
       </div>
       <div className={`p-5 overflow-hidden w-full ${drawerOpen ? "" : ""}`}>
-        <div className="flex mb-5 flex-col sm:flex-row">
+        <div className="flex mb-5 flex-col sm:flex-row text-2xl">
           <div className="flex mb-2">
 
             <button
@@ -104,7 +137,7 @@ export default function Home() {
                   key={status}
                   onClick={() => toggleStatusFilter(status)}
                   className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 ? "opacity-25" : ""} p-2 rounded-lg mr-2`}>
-                  {toEmoji(status)}
+                  <StatusIcon status={status} />
                 </button>
               )
             })}
@@ -151,62 +184,48 @@ export default function Home() {
                   <div
                     key={entry.id}
                     className={`
-                      group flex justify-between rounded-lg cursor-pointer text-xl
+                    rounded-lg cursor-pointer text-xl p-1 sm:p-0
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
-                        <button className="grow">Delete?</button>
+                        <button className="grow p-3 sm:p-0">Delete?</button>
                       </div>
                       :
-                      <>
-                        <div
-                          onDoubleClick={() => router.push(`/entry/${entry.id}`)}
-                          className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
-                          <div className="mr-2">{toEmoji(entry.status)}</div>
-                          <div className="w-auto text-nowrap whitespace-nowrap text-ellipsis ">{entry.label}</div>
-                          <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap whitespace-nowrap text-ellipsis">
-                            {categories.find(c => c.id === entry.category)?.label}
+                      <div>
+                        <div className="group flex justify-between">
+                          <div
+                            onClick={() => entrySelected === entry.id ? setEntrySelected(undefined) : setEntrySelected(entry.id)}
+                            onDoubleClick={() => router.push(`/entry/${entry.id}`)}
+                            className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
+                            <div className="mr-2"><StatusIcon status={entry.status} /></div>
+                            <div className="w-auto truncate">{entry.label}</div>
+                            <div className="hidden sm:block ml-2 text-slate-500 dark:text-slate-50 opacity-20 truncate">
+                              {categories.find(c => c.id === entry.category)?.label}
+                            </div>
                           </div>
+                          <div className={`hidden sm:group-hover:flex text-nowrap whitespace-nowrap items-center`}>
+                            <Actions entry={entry} updateEntry={updateEntry} setDeletePending={setDeletePending} />
+                          </div>
+                          <span
+                            className={`sm:group-hover:hidden ${entrySelected === entry.id ? "hidden sm:block" : ""} text-slate-500 dark:text-slate-50 opacity-50 text-nowrap ml-5`}>
+                            {DateTime
+                              .fromISO(entry.modified_at)
+                              .toRelative()
+                              ?.split(" ")
+                              .map((word, i) => i === 0 ? word : i === 1 && word[0])}
+                          </span>
                         </div>
-                        <div className="hidden group-hover:flex text-nowrap whitespace-nowrap items-center">
-                          <Link
-                            href={`/entry/${entry.id}`}
-                            className="mr-4 text-3xl">
-                            <FaEdit />
-                          </Link>
-                          {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
-                            return (
-                              <button
-                                key={status}
-                                disabled={status.valueOf() === entry.status}
-                                onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
-                                className={`text-3xl hover:text-blue-700 bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
-                                {toEmoji(status)}
-                              </button>
-                            )
-                          })
-                          }
-                          <button
-                            className="mr-2 hover:text-red-600 text-3xl"
-                            onClick={() => setDeletePending(entry.id)}>
-                            <FaTrash />
-                          </button>
+                        <div className={`flex ${entrySelected === entry.id ? "sm:hidden" : "hidden"} p-3 justify-evenly`}>
+                          <Actions entry={entry} updateEntry={updateEntry} setDeletePending={setDeletePending} />
                         </div>
-                        <span
-                          className="text-slate-500 dark:text-slate-50 opacity-50 text-nowrap ml-5">
-                          {DateTime
-                            .fromISO(entry.modified_at)
-                            .toRelative()
-                            ?.split(" ")
-                            .map((word, i) => i === 0 ? word : i === 1 && word[0])}
-                        </span>
-                      </>}
+                      </div>
+                    }
                   </div>
                 )
               })}
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

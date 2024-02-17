@@ -2,7 +2,8 @@
 import { useApuntoContext } from "@/providers/ApuntoProvider";
 import { CategoryNode, useCategoryFilterContext } from "@/providers/CategoryFilter";
 import React, { useCallback, useRef, useState } from "react";
-import { FaAngleDown, FaAngleRight, FaFolderPlus, FaPlus, FaTrash } from "react-icons/fa";
+import { FaAngleDown, FaAngleRight, FaPlus, FaTrash } from "react-icons/fa";
+import { TbLayoutSidebarLeftCollapse } from "react-icons/tb";
 interface InnerCategoryProps {
     category: CategoryNode
     level: number
@@ -69,13 +70,13 @@ const CategoryTree = ({ category, level, select, selected }: InnerCategoryProps)
                 <li key={category.id} className={`${selected.length > 1 && category.id === selected[0] ? selectedClass : ""} ${level > 0 ? "ml-4" : ""}`}>
                     <div
                         className={`
-                            group flex items-center p-1 hover:bg-sky-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer 
+                            group flex items-center p-1 hover:bg-sky-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer font-semibold text-xl
                             ${selected.length === 1 && category.id === selected[0] ? selectedClass : ""}
                             `}>
                         <div
                             className={`flex items-center ml-1 w-full text-left`}
                             onClick={() => select(category.id)}>
-                            <div className="grow">
+                            <div className="grow truncate">
                                 {category.label}
                             </div>
                             <button
@@ -146,18 +147,17 @@ const CategoryTree = ({ category, level, select, selected }: InnerCategoryProps)
     )
 }
 
-function Categories() {
+function Categories({ close }: { close: () => void }) {
     const { categories, selected, select } = useCategoryFilterContext()
 
     return (
         <div className="flex flex-col">
-            <div className="mb-5 flex">
+            <div className="mb-5 flex text-xl font-semibold">
                 <div className="flex mb-2 h-10">
-                    <button className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 hover:bg-slate-600 dark:hover:bg-slate-900">
-                        <FaFolderPlus />
-                    </button>
-                    <button className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 hover:bg-slate-600 dark:hover:bg-slate-900">
-                        <FaFolderPlus />
+                    <button
+                        className="flex items-center bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 sm:hidden"
+                        onClick={close} >
+                        <TbLayoutSidebarLeftCollapse className="text-4xl mr-2" /> Hide
                     </button>
                 </div>
             </div>
