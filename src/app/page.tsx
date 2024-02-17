@@ -3,8 +3,12 @@ import { useApuntoContext } from "@/providers/ApuntoProvider";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DateTime } from "luxon";
-import { FaPlus } from "react-icons/fa";
-import { FaDeleteLeft } from "react-icons/fa6";
+import { FaCheck, FaEdit, FaPlus, FaRegCalendar, FaTrash } from "react-icons/fa";
+import { FaDeleteLeft, FaFolderTree } from "react-icons/fa6";
+import { Categories } from "./categories";
+import { useCategoryFilterContext } from "@/providers/CategoryFilter";
+import { useRouter } from "next/navigation";
+import { MdAccessAlarm } from "react-icons/md";
 
 enum Status {
   New = 1,
@@ -14,12 +18,17 @@ enum Status {
 }
 
 export default function Home() {
-  const { entries, addEntry, updateEntry, deleteEntry } = useApuntoContext()
+  const { entries, categories, addEntry, updateEntry, deleteEntry } = useApuntoContext()
+  const { selected } = useCategoryFilterContext()
+
   const [statusFilter, setStatusFilter] = useState<number>(0)
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
   const [deletePending, setDeletePending] = useState<string | undefined>()
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
+
   const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter()
 
   const handleClickOutside = useCallback((e: MouseEvent) => {
     if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -35,11 +44,12 @@ export default function Home() {
     e.preventDefault()
     if (!newEntry) return
     addEntry({
+      category: selected[0] === "root" ? null : selected[0],
       status: Status.New,
       label: newEntry
     })
     setNewEntry("")
-  }, [addEntry, newEntry])
+  }, [addEntry, newEntry, selected])
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside)
@@ -48,27 +58,40 @@ export default function Home() {
     }
   }, [handleClickOutside])
 
+  const toggleDrawer = useCallback(() => {
+    setDrawerOpen(o => !o)
+  }, [])
+
   const toEmoji = (status: Status) => {
     switch (status) {
       case Status.New:
-        return "✏️"
+        return <FaPlus />
       case Status.Waiting:
-        return "📋"
+        return <FaRegCalendar />
       case Status.Urgent:
-        return "⏰"
+        return <MdAccessAlarm />
       case Status.Done:
-        return "✅"
+        return <FaCheck />
       default:
         return ""
     }
   }
 
   return (
-    <div className="m-auto max-w-xl">
-
-      <div className="p-5 max-w-full">
+    <div className="m-auto flex max-w-screen-xl">
+      <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
+        <Categories />
+      </div>
+      <div className={`p-5 overflow-hidden w-full ${drawerOpen ? "" : ""}`}>
         <div className="flex mb-5 flex-col sm:flex-row">
           <div className="flex mb-2">
+
+            <button
+              className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 sm:hidden"
+              onClick={toggleDrawer} >
+              <FaFolderTree />
+            </button>
+
             <button
               onClick={() => setNewEntry("")}
               className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2">
@@ -80,7 +103,7 @@ export default function Home() {
                 <button
                   key={status}
                   onClick={() => toggleStatusFilter(status)}
-                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 && "opacity-25"} p-2 rounded-lg mr-2`}>
+                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 ? "opacity-25" : ""} p-2 rounded-lg mr-2`}>
                   {toEmoji(status)}
                 </button>
               )
@@ -118,30 +141,38 @@ export default function Home() {
           )}
           <div>
             {entries
+              .filter(e => selected.indexOf(e.category ?? "root") > -1)
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .map((entry) => {
-                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-300" : "text-green-600"
+                const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-400" : "text-green-600"
 
                 return (
                   <div
                     key={entry.id}
-                    className={`group flex justify-between rounded-lg cursor-default ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+                    className={`
+                      group flex justify-between rounded-lg cursor-pointer text-xl
+                      ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
                         <button className="grow">Delete?</button>
                       </div>
                       :
                       <>
-                        <div className={`flex grow font-semibold overflow-hidden ${color}`}>
+                        <div
+                          onDoubleClick={() => router.push(`/entry/${entry.id}`)}
+                          className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                           <div className="mr-2">{toEmoji(entry.status)}</div>
-                          <div className="w-auto text-nowrap text-ellipsis overflow-hidden">{entry.label}</div>
+                          <div className="w-auto text-nowrap whitespace-nowrap text-ellipsis ">{entry.label}</div>
+                          <div className="ml-2 text-slate-500 dark:text-slate-50 opacity-20 text-nowrap whitespace-nowrap text-ellipsis">
+                            {categories.find(c => c.id === entry.category)?.label}
+                          </div>
                         </div>
-                        <div className="hidden group-hover:inline text-nowrap">
+                        <div className="hidden group-hover:flex text-nowrap whitespace-nowrap items-center">
                           <Link
                             href={`/entry/${entry.id}`}
-                            className="mr-4">
-                            💬
+                            className="mr-4 text-3xl">
+                            <FaEdit />
                           </Link>
                           {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
                             return (
@@ -149,16 +180,16 @@ export default function Home() {
                                 key={status}
                                 disabled={status.valueOf() === entry.status}
                                 onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
-                                className={`bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
+                                className={`text-3xl hover:text-blue-700 bg-slate-50 dark:bg-slate-800 ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-2`}>
                                 {toEmoji(status)}
                               </button>
                             )
                           })
                           }
                           <button
-                            className="mr-2"
+                            className="mr-2 hover:text-red-600 text-3xl"
                             onClick={() => setDeletePending(entry.id)}>
-                            ❌
+                            <FaTrash />
                           </button>
                         </div>
                         <span
