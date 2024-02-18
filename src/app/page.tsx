@@ -184,7 +184,8 @@ export default function Home() {
                   <div
                     key={entry.id}
                     className={`
-                    rounded-lg cursor-pointer text-xl p-1 sm:p-0
+                    ${entrySelected === entry.id ? "bg-slate-50 sm:bg-transparent dark:bg-transparent dark:bg-slate-800 border-blue-300 p-2" : "border-transparent sm:hover:p-1"} border-4 sm:border-none transition-all ease-in-out
+                    rounded-lg cursor-pointer text-xl sm:p-0
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
