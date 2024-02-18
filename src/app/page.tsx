@@ -111,7 +111,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="m-auto flex max-w-screen-xl">
+    <div className="m-auto flex max-w-screen-lg">
       <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
         <Categories close={() => setDrawerOpen(false)} />
       </div>
