@@ -215,7 +215,7 @@ export default function Home() {
                               .map((word, i) => i === 0 ? word : i === 1 && word[0])}
                           </span>
                         </div>
-                        <div className={`flex ${entrySelected === entry.id ? "sm:hidden" : "hidden"} p-3 justify-evenly`}>
+                        <div className={`flex transition-all ease-in-out overflow-clip ${entrySelected === entry.id ? "sm:hidden h-13 p-3" : "h-0 p-0"} justify-evenly`}>
                           <Actions entry={entry} updateEntry={updateEntry} setDeletePending={setDeletePending} />
                         </div>
                       </div>
