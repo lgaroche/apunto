@@ -9,11 +9,14 @@ import { Categories } from "./categories";
 import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 import { useRouter } from "next/navigation";
 import { MdAccessAlarm } from "react-icons/md";
+import { HiOutlineDocumentAdd } from "react-icons/hi";
+import { BiRefresh } from "react-icons/bi";
+import { CgSpinner } from "react-icons/cg";
 
 enum Status {
-  New = 1,
-  Waiting = 2,
-  Urgent = 4,
+  Urgent = 1,
+  New = 2,
+  Waiting = 4,
   Done = 8
 }
 
@@ -65,7 +68,7 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
 )
 
 export default function Home() {
-  const { entries, categories, addEntry, updateEntry, deleteEntry } = useApuntoContext()
+  const { entries, categories, addEntry, updateEntry, deleteEntry, refresh } = useApuntoContext()
   const { selected } = useCategoryFilterContext()
 
   const [statusFilter, setStatusFilter] = useState<number>(0)
@@ -74,6 +77,7 @@ export default function Home() {
   const [deletePending, setDeletePending] = useState<string | undefined>()
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false)
   const [entrySelected, setEntrySelected] = useState<string | undefined>()
+  const [loading, setLoading] = useState<boolean>(true)
 
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter()
@@ -110,13 +114,23 @@ export default function Home() {
     setDrawerOpen(o => !o)
   }, [])
 
+  const handleRefresh = useCallback(async () => {
+    setLoading(true)
+    await refresh()
+    setLoading(false)
+  }, [refresh])
+
+  useEffect(() => {
+    refresh().then(() => setLoading(false))
+  }, [refresh])
+
   return (
     <div className="m-auto flex max-w-screen-lg">
       <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
         <Categories close={() => setDrawerOpen(false)} />
       </div>
       <div className={`p-5 overflow-hidden w-full ${drawerOpen ? "" : ""}`}>
-        <div className="flex mb-5 flex-col sm:flex-row text-xl">
+        <div className="flex mb-5 flex-col text-xl">
           <div className="flex mb-2">
 
             <button
@@ -127,29 +141,49 @@ export default function Home() {
 
             <button
               onClick={() => setNewEntry("")}
-              className="bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2">
-              <FaPlus />
+              className="grow flex items-center font-semibold bg-blue-50 hover:dark:bg-blue-600 dark:bg-blue-800 p-2 rounded-lg mr-2">
+              <HiOutlineDocumentAdd className="mr-2" />
+              Create
             </button>
 
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="grow flex items-center font-semibold bg-blue-50 hover:dark:bg-teal-600 dark:bg-teal-800 p-2 rounded-lg">
+
+              {loading ?
+                <>
+                  <CgSpinner className={`animate-spin mr-2`} /> Loading...
+                </>
+                :
+                <>
+                  <BiRefresh className="mr-2" /> Refresh
+                </>
+              }
+            </button>
+          </div>
+
+          <div className="flex">
             {[Status.New, Status.Waiting, Status.Urgent, Status.Done].map(status => {
               return (
                 <button
                   key={status}
                   onClick={() => toggleStatusFilter(status)}
-                  className={`bg-slate-50 dark:bg-slate-800 ${(statusFilter & status) > 0 ? "opacity-25" : ""} p-2 rounded-lg mr-2`}>
+                  className={`bg-slate-50 dark:bg-slate-800 hover:bg-slate-400 dark:hover:bg-slate-700 ${(statusFilter & status) > 0 ? "opacity-25" : ""} p-2 rounded-lg mr-2`}>
                   <StatusIcon status={status} />
                 </button>
               )
             })}
+            <input
+              value={textFilter}
+              onChange={e => setTextFilter(e.target.value)}
+              type="text"
+              placeholder="Filter"
+              className="w-full p-2 rounded-lg bg-slate-50 dark:bg-slate-800" />
           </div>
-          <input
-            value={textFilter}
-            onChange={e => setTextFilter(e.target.value)}
-            type="text"
-            placeholder="Filter"
-            className="w-full mb-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-800" />
+
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col text-xl">
           {newEntry !== undefined && (
             <div className="mb-5">
               <form onSubmit={submitNewEntry} className="flex">
@@ -177,6 +211,10 @@ export default function Home() {
               .filter(e => selected.indexOf(e.category ?? "root") > -1)
               .filter(e => (e.status & statusFilter) === 0)
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
+              .sort((a, b) => {
+                if (a.status !== b.status) return a.status - b.status
+                return DateTime.fromISO(b.modified_at).toMillis() - DateTime.fromISO(a.modified_at).toMillis()
+              })
               .map((entry) => {
                 const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-400" : "text-green-600"
 

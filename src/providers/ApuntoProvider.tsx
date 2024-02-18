@@ -14,6 +14,7 @@ interface ApuntoContextProps {
     updateEntry: (entry: Partial<Entry>) => Promise<void>;
     addCategory: (category: Partial<Category>) => Promise<void>;
     deleteCategory: (id: string) => Promise<void>;
+    refresh: () => Promise<void>;
 }
 
 const ApuntoContext = React.createContext<ApuntoContextProps>({
@@ -24,6 +25,7 @@ const ApuntoContext = React.createContext<ApuntoContextProps>({
     updateEntry: async () => { },
     addCategory: async () => { },
     deleteCategory: async () => { },
+    refresh: async () => { },
 })
 
 const useApuntoContext = () => React.useContext(ApuntoContext);
@@ -46,7 +48,10 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
 
     const getEntries = useCallback(async () => {
         if (!supabase) return
-        const { data, error } = await supabase.from("entries").select().order("created_at", { ascending: false })
+        const { data, error } = await supabase
+            .from("entries")
+            .select()
+            .order("modified_at", { ascending: false })
         if (error) {
             console.error("error", error)
             return
@@ -140,9 +145,9 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
         getEntries()
     }, [categories, getCategories, getEntries, supabase])
 
-    React.useEffect(() => {
-        getCategories()
-        getEntries()
+    const refresh = useCallback(async () => {
+        await getCategories()
+        await getEntries()
     }, [getCategories, getEntries])
 
     const value = useMemo(() => ({
@@ -152,8 +157,9 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
         deleteEntry,
         updateEntry,
         addCategory,
-        deleteCategory
-    }), [entries, categories, addEntry, deleteEntry, updateEntry, addCategory, deleteCategory])
+        deleteCategory,
+        refresh
+    }), [entries, categories, addEntry, deleteEntry, updateEntry, addCategory, deleteCategory, refresh])
 
     return <ApuntoContext.Provider value={value}>
         {children}
