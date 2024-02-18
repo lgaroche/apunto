@@ -22,7 +22,7 @@ const StatusIcon = ({ status, className }: { status: Status, className?: string 
     case Status.New:
       return <FaPlus className={`text-blue-600 ${className ?? ""}`} />
     case Status.Waiting:
-      return <FaRegCalendar className={`text-slate-800 ${className ?? ""}`} />
+      return <FaRegCalendar className={`text-slate-800 dark:text-slate-400 ${className ?? ""}`} />
     case Status.Urgent:
       return <MdAccessAlarm className={`text-red-600 ${className ?? ""}`} />
     case Status.Done:
@@ -184,7 +184,7 @@ export default function Home() {
                   <div
                     key={entry.id}
                     className={`
-                    ${entrySelected === entry.id ? "bg-slate-50 sm:bg-transparent dark:bg-transparent dark:bg-slate-800 border-blue-300 p-2" : "border-transparent sm:hover:p-1"} border-4 sm:border-none transition-all ease-in-out
+                    ${entrySelected === entry.id ? "bg-slate-50 sm:bg-transparent dark:bg-transparent dark:bg-slate-800 border-blue-300 dark:border-blue-800 p-2" : "border-transparent sm:hover:p-1"} border-4 sm:border-none transition-all ease-in-out
                     rounded-lg cursor-pointer text-xl sm:p-0
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
@@ -200,7 +200,7 @@ export default function Home() {
                             className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                             <div className="mr-2"><StatusIcon status={entry.status} /></div>
                             <div className="w-auto truncate">{entry.label}</div>
-                            <div className="hidden sm:block ml-2 text-slate-500 dark:text-slate-50 opacity-20 truncate">
+                            <div className="ml-2 grow text-lg text-slate-500 dark:text-slate-50 opacity-20 truncate">
                               {categories.find(c => c.id === entry.category)?.label}
                             </div>
                           </div>
