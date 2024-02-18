@@ -70,7 +70,7 @@ const CategoryTree = ({ category, level, select, selected }: InnerCategoryProps)
                 <li key={category.id} className={`${selected.length > 1 && category.id === selected[0] ? selectedClass : ""} ${level > 0 ? "ml-4" : ""}`}>
                     <div
                         className={`
-                            group flex items-center p-1 hover:bg-sky-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer font-semibold text-xl
+                            group flex items-center p-1 hover:bg-sky-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer font-semibold text-lg
                             ${selected.length === 1 && category.id === selected[0] ? selectedClass : ""}
                             `}>
                         <div
@@ -152,7 +152,7 @@ function Categories({ close }: { close: () => void }) {
 
     return (
         <div className="flex flex-col">
-            <div className="mb-5 flex text-xl font-semibold">
+            <div className="mb-5 flex text-lg font-semibold">
                 <div className="flex mb-2 h-10">
                     <button
                         className="flex items-center bg-slate-50 dark:bg-slate-800 p-2 rounded-lg mr-2 sm:hidden"

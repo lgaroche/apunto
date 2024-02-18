@@ -22,7 +22,7 @@ const StatusIcon = ({ status, className }: { status: Status, className?: string 
     case Status.New:
       return <FaPlus className={`text-blue-600 ${className ?? ""}`} />
     case Status.Waiting:
-      return <FaRegCalendar className={`text-slate-800 ${className ?? ""}`} />
+      return <FaRegCalendar className={`text-slate-800 dark:text-slate-400 ${className ?? ""}`} />
     case Status.Urgent:
       return <MdAccessAlarm className={`text-red-600 ${className ?? ""}`} />
     case Status.Done:
@@ -46,7 +46,7 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
           key={status}
           disabled={status.valueOf() === entry.status}
           onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
-          className={`text-3xl ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-3`}>
+          className={`text-2xl ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-3`}>
           <StatusIcon status={status} className={"hover:text-blue-400"} />
         </button>
       )
@@ -54,7 +54,7 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
     }
     <Link
       href={`/entry/${entry.id}`}
-      className="ml-4 text-3xl text-slate-700 hover:text-blue-400">
+      className="ml-4 text-2xl text-slate-700 hover:text-blue-400">
       <FaEdit />
     </Link>
     <button
@@ -111,12 +111,12 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="m-auto flex max-w-screen-xl">
+    <div className="m-auto flex max-w-screen-lg">
       <div className={`p-5 max-w-96 ${drawerOpen ? "basis-4/5" : "basis-1/3 hidden sm:block"}`}>
         <Categories close={() => setDrawerOpen(false)} />
       </div>
       <div className={`p-5 overflow-hidden w-full ${drawerOpen ? "" : ""}`}>
-        <div className="flex mb-5 flex-col sm:flex-row text-2xl">
+        <div className="flex mb-5 flex-col sm:flex-row text-xl">
           <div className="flex mb-2">
 
             <button
@@ -184,7 +184,8 @@ export default function Home() {
                   <div
                     key={entry.id}
                     className={`
-                    rounded-lg cursor-pointer text-xl p-1 sm:p-0
+                    ${entrySelected === entry.id ? "bg-slate-50 sm:bg-transparent dark:bg-transparent dark:bg-slate-800 border-blue-300 dark:border-blue-800 p-2 sm:p-0" : "border-transparent"} sm:hover:p-1 border-4 sm:border-none transition-all ease-in-out
+                    rounded-lg cursor-pointer text-lg sm:p-0
                       ${deletePending === entry.id ? "bg-red-600 text-slate-50 hover:bg-red-500" : "hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
                     {deletePending === entry.id ?
                       <div ref={ref} className="flex grow font-semibold" onClick={() => deleteEntry(entry.id)}>
@@ -199,7 +200,7 @@ export default function Home() {
                             className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                             <div className="mr-2"><StatusIcon status={entry.status} /></div>
                             <div className="w-auto truncate">{entry.label}</div>
-                            <div className="hidden sm:block ml-2 text-slate-500 dark:text-slate-50 opacity-20 truncate">
+                            <div className="ml-2 grow text-md text-slate-500 dark:text-slate-50 opacity-20 truncate">
                               {categories.find(c => c.id === entry.category)?.label}
                             </div>
                           </div>
@@ -215,7 +216,7 @@ export default function Home() {
                               .map((word, i) => i === 0 ? word : i === 1 && word[0])}
                           </span>
                         </div>
-                        <div className={`flex ${entrySelected === entry.id ? "sm:hidden" : "hidden"} p-3 justify-evenly`}>
+                        <div className={`flex transition-all ease-in-out overflow-clip ${entrySelected === entry.id ? "sm:hidden h-13 p-3" : "h-0 p-0"} justify-evenly`}>
                           <Actions entry={entry} updateEntry={updateEntry} setDeletePending={setDeletePending} />
                         </div>
                       </div>
