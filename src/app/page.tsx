@@ -141,7 +141,7 @@ export default function Home() {
 
             <button
               onClick={() => setNewEntry("")}
-              className="grow flex items-center font-semibold bg-blue-50 hover:dark:bg-blue-600 dark:bg-blue-800 p-2 rounded-lg mr-2">
+              className="grow flex items-center font-semibold text-slate-50 bg-blue-500 hover:bg-blue-300 hover:dark:bg-blue-600 dark:bg-blue-800 p-2 rounded-lg mr-2">
               <HiOutlineDocumentAdd className="mr-2" />
               Create
             </button>
@@ -149,7 +149,7 @@ export default function Home() {
             <button
               onClick={handleRefresh}
               disabled={loading}
-              className="grow flex items-center font-semibold bg-blue-50 hover:dark:bg-teal-600 dark:bg-teal-800 p-2 rounded-lg">
+              className="grow flex items-center font-semibold text-slate-50 hover:bg-green-400 bg-green-500 hover:dark:bg-teal-600 dark:bg-teal-800 p-2 rounded-lg">
 
               {loading ?
                 <>
