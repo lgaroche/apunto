@@ -3,6 +3,7 @@ import React, { ReactNode, useMemo } from "react";
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { Database } from "../database.types";
 import { useEffect } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 interface SupabaseContextProps {
     supabase?: SupabaseClient<Database>
@@ -18,7 +19,7 @@ const SupabaseProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        const supabase = createClient<Database>(supabaseUrl, supabaseKey)
+        const supabase = createBrowserClient<Database>(supabaseUrl, supabaseKey)
         console.log("supabase", supabase)
         setSupabase(supabase)
     }, [])

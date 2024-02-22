@@ -10,8 +10,10 @@ import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 import { useRouter } from "next/navigation";
 import { MdAccessAlarm } from "react-icons/md";
 import { HiOutlineDocumentAdd } from "react-icons/hi";
-import { BiRefresh } from "react-icons/bi";
+import { BiLogOut, BiRefresh } from "react-icons/bi";
 import { CgSpinner } from "react-icons/cg";
+import { useSupabaseContext } from "@/providers/SupabaseProvider";
+import { User } from "@supabase/supabase-js";
 
 enum Status {
   Urgent = 1,
@@ -70,7 +72,9 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
 export default function Home() {
   const { entries, categories, addEntry, updateEntry, deleteEntry, refresh } = useApuntoContext()
   const { selected } = useCategoryFilterContext()
+  const { supabase } = useSupabaseContext()
 
+  const [user, setUser] = useState<User | null>()
   const [statusFilter, setStatusFilter] = useState<number>(0)
   const [textFilter, setTextFilter] = useState<string>("")
   const [newEntry, setNewEntry] = useState<string | undefined>()
@@ -121,8 +125,35 @@ export default function Home() {
   }, [refresh])
 
   useEffect(() => {
-    refresh().then(() => setLoading(false))
-  }, [refresh])
+    if (!supabase) return
+    const load = async () => {
+      const { data, error } = await supabase.auth.getUser()
+      if (error) console.error(error)
+      const { user } = data
+      if (!user) {
+        router.push("/login")
+        return
+      }
+      console.log("auth data", data)
+      setUser(data?.user)
+      await refresh()
+      setLoading(false)
+    }
+    load()
+  }, [refresh, router, supabase])
+
+  const handleLogout = useCallback(async () => {
+    if (!user || !supabase) return
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/login")
+  }, [router, supabase, user])
+
+  if (!user) return (
+    <div className="flex justify-center items-center h-screen">
+      <CgSpinner className="animate-spin text-6xl" />
+    </div>
+  )
 
   return (
     <div className="m-auto flex max-w-screen-lg">
@@ -160,6 +191,12 @@ export default function Home() {
                   <BiRefresh className="mr-2" /> Refresh
                 </>
               }
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className=" flex items-center font-semibold text-slate-50 bg-red-500 hover:bg-red-300 hover:dark:bg-red-600 dark:bg-red-800 p-2 rounded-lg ml-2">
+              <BiLogOut className="mr-1" />
             </button>
           </div>
 
