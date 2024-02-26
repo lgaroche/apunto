@@ -250,7 +250,7 @@ export default function Home() {
               .filter(e => e.label && e.label.toLowerCase().indexOf(textFilter.toLowerCase()) > -1)
               .sort((a, b) => {
                 if (a.status !== b.status) return a.status - b.status
-                return DateTime.fromISO(b.modified_at).toMillis() - DateTime.fromISO(a.modified_at).toMillis()
+                return DateTime.fromISO(a.modified_at).toMillis() - DateTime.fromISO(b.modified_at).toMillis()
               })
               .map((entry) => {
                 const color = entry.status === Status.New ? "text-blue-600" : entry.status === Status.Urgent ? "text-red-600" : entry.status === Status.Waiting ? "text-slate-800 dark:text-slate-400" : "text-green-600"
