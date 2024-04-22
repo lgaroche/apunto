@@ -59,6 +59,7 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
     }
     <Link
       href={`/entry/${entry.id}`}
+      shallow={true}
       className="ml-4 text-2xl text-slate-700 hover:text-blue-400">
       <FaEdit />
     </Link>
@@ -271,7 +272,6 @@ export default function Home() {
                         <div className="group flex justify-between">
                           <div
                             onClick={() => entrySelected === entry.id ? setEntrySelected(undefined) : setEntrySelected(entry.id)}
-                            onDoubleClick={() => router.push(`/entry/${entry.id}`)}
                             className={`flex grow items-center font-semibold overflow-hidden ${color} selection:bg-inherit`}>
                             <div className="mr-2"><StatusIcon status={entry.status} /></div>
                             <div className="w-auto truncate">{entry.label}</div>

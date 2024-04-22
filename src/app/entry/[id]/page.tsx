@@ -4,12 +4,14 @@ import { useApuntoContext, Entry } from "@/providers/ApuntoProvider";
 import { useCategoryFilterContext } from "@/providers/CategoryFilter";
 import { useSupabaseContext } from "@/providers/SupabaseProvider";
 import { User } from "@supabase/supabase-js";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect } from "react";
 import { CgSpinner } from "react-icons/cg";
-import { FaArrowRight, FaEdit, FaRegFolder } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaEdit, FaRegFolder } from "react-icons/fa";
 import { MdOutlineCancel } from "react-icons/md";
 import Markdown from "react-markdown";
+import remarkGfm from 'remark-gfm'
 
 export default function EntryPage({ params }: { params: { id: string } }) {
     const { supabase } = useSupabaseContext()
@@ -82,27 +84,35 @@ export default function EntryPage({ params }: { params: { id: string } }) {
     }
 
     return (
-        <div className="max-w-screen-sm m-auto h-screen flex flex-col">
+        <div className="max-w-screen-sm m-auto h-screen flex flex-col p-4 md:p-0">
             <div className="flex flex-none mt-2">
-                {editLabel !== null ?
-                    <div className="">
-                        <input
-                            className="bg-slate-300 p-2 rounded-lg dark:bg-slate-800 dark:text-white"
-                            value={editLabel}
-                            onChange={e => setEditLabel(e.target.value)} />
+                <Link
+                    href={"/"}
+                    shallow={true}
+                    className="flex items-center mr-2 text-3xl hover:text-blue-600">
+                    <FaArrowLeft />
+                </Link>
+                <div className="flex">
+                    {editLabel !== null ?
+                        <div className="">
+                            <input
+                                className="bg-slate-300 p-2 rounded-lg dark:bg-slate-800 dark:text-white"
+                                value={editLabel}
+                                onChange={e => setEditLabel(e.target.value)} />
+                            <button
+                                onClick={updateLabel}
+                                className="ml-2 p-2 rounded-lg hover:bg-slate-700">
+                                Set
+                            </button>
+                        </div>
+                        :
                         <button
-                            onClick={updateLabel}
-                            className="ml-2 p-2 rounded-lg hover:bg-slate-700">
-                            Set
+                            className="text-4xl font-semibold hover:text-blue-600"
+                            onClick={() => setEditLabel(entry.label)}>
+                            {entry?.label}
                         </button>
-                    </div>
-                    :
-                    <button
-                        className="text-4xl font-semibold"
-                        onClick={() => setEditLabel(entry.label)}>
-                        {entry?.label}
-                    </button>
-                }
+                    }
+                </div>
             </div>
             <div className="flex-none max-w-screen-sm pb-4 mt-2">
                 {selected !== null ?
@@ -148,7 +158,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
 
             </div>
 
-            <div className="flex flex-col max-w-screen-sm p-4 rounded-lg border-slate-300 border">
+            <div className="flex flex-col md:p-4 max-w-screen-sm rounded-lg border-slate-300 dark:border-neutral-700 md:border">
                 {editText === null ?
                     <div className="flex flex-col">
                         <button
@@ -157,7 +167,11 @@ export default function EntryPage({ params }: { params: { id: string } }) {
                             <FaEdit className="mr-2" />
                             Edit
                         </button>
-                        <Markdown className="grow p-2 markdown">{entry.text}</Markdown>
+                        <Markdown
+                            className="grow p-2 markdown"
+                            remarkPlugins={[remarkGfm]}>
+                            {entry.text}
+                        </Markdown>
                     </div>
                     :
                     <>

@@ -9,7 +9,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-rgb: 255, 255, 255;
+    --foreground-rgb: 188, 185, 180;
     --background-rgb: 25, 27, 31;
   }
 }
@@ -65,6 +65,18 @@ body {
   @apply list-decimal list-inside;
 }
 
-.markdown > ul {
+.markdown > ul:not(.contains-task-list) {
   @apply list-disc list-inside;
+}
+
+.markdown > table {
+  @apply border-collapse border border-gray-200;
+}
+
+.markdown > table th {
+  @apply border border-gray-200 dark:border-neutral-700 bg-gray-100 dark:bg-neutral-800 px-3 py-2;
+}
+
+.markdown > table td {
+  @apply border border-gray-200 dark:border-neutral-700 px-3 py-2;
 }
