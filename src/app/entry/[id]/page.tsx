@@ -153,7 +153,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
                     <div className="flex flex-col">
                         <button
                             className="flex mb-5 w-fit items-baseline p-2 rounded-lg bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 hover:bg-blue-200"
-                            onClick={() => setEditText(entry.text)}>
+                            onClick={() => setEditText(entry.text ?? "")}>
                             <FaEdit className="mr-2" />
                             Edit
                         </button>
