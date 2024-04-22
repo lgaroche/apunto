@@ -157,7 +157,7 @@ export default function EntryPage({ params }: { params: { id: string } }) {
                             <FaEdit className="mr-2" />
                             Edit
                         </button>
-                        <Markdown className="grow p-2">{entry.text}</Markdown>
+                        <Markdown className="grow p-2 markdown">{entry.text}</Markdown>
                     </div>
                     :
                     <>
