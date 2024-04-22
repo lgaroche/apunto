@@ -85,7 +85,7 @@ const ApuntoProvider = ({ children }: { children: React.ReactNode }) => {
 
     const updateEntry = useCallback(async (entry: Partial<Entry>) => {
         if (!supabase || !entry.id) return
-        const { data, error } = await supabase.from("entries").update(entry).eq("id", entry.id).select()
+        const { data, error } = await supabase.from("entries").update({ ...entry, modified_at: (new Date).toISOString() }).eq("id", entry.id).select()
         console.log("data", data, "error", error)
         if (error) {
             console.error("error", error)

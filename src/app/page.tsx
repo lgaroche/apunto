@@ -50,7 +50,7 @@ const Actions = ({ entry, updateEntry, setDeletePending }: ActionsProps) => (
         <button
           key={status}
           disabled={status.valueOf() === entry.status}
-          onClick={() => updateEntry({ id: entry.id, modified_at: (new Date).toISOString(), status })}
+          onClick={() => updateEntry({ id: entry.id, status })}
           className={`text-2xl ${status.valueOf() === entry.status ? "opacity-25" : ""} mr-3`}>
           <StatusIcon status={status} className={"hover:text-blue-400"} />
         </button>
