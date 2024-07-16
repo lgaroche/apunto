@@ -6,7 +6,12 @@ import { redirect } from "next/navigation"
 
 import { createClient } from "@/utils/supabase/server"
 
-export async function login(formData: FormData) {
+interface Error {
+  name: string
+  message: string
+}
+
+export async function login(prevState: { error?: Error }, formData: FormData) {
   const cookieStore = cookies()
   const supabase = createClient(cookieStore)
 
@@ -20,15 +25,14 @@ export async function login(formData: FormData) {
   if (error) {
     console.error(error)
     revalidatePath("/login", "page")
-    redirect(
-      `/login?error=${error.name}&error_description=${
-        error.message
-      }&error_code=${error.status}&t=${Date.now()}`
-    )
+    return {
+      error: { name: error.name, message: error.message },
+    }
   }
 
   revalidatePath("/", "layout")
   redirect("/")
+  return {}
 }
 
 export async function signup(formData: FormData) {
