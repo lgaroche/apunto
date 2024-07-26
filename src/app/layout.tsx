@@ -10,6 +10,17 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Apunto",
   description: "Ultimate todo list",
+  appleWebApp: {
+    title: 'Apunto',
+    statusBarStyle: 'black-translucent',
+    startupImage: [
+      '/apple-touch-icon.png',
+      {
+        url: 'apple-touch-icon.png',
+        media: '(device-width: 768px) and (device-height: 1024px)',
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
