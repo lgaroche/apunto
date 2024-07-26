@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Apunto",
   description: "Ultimate todo list",
+  manifest: "/site.webmanifest",
   appleWebApp: {
     title: 'Apunto',
     statusBarStyle: 'black-translucent',
